@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#101B3D">
+<title>Hijrah Road — Makkah to Madinah Guide</title>
+<style>
+  :root{
+    --navy-deep:#0C1530; --navy:#1A2B5C; --navy-card:#16234A;
+    --gold:#C8A24A; --gold-bright:#E2C277; --cream:#F7F0DD;
+    --sand:#8B7B5A; --line:#2A3A6B; --ok:#7BBF8E;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:var(--navy-deep); color:var(--cream);
+    font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+    overflow:hidden; user-select:none;
+  }
+  .serif{font-family:Georgia,'Times New Roman',serif}
+  .arabic{font-family:'Noto Naskh Arabic','Traditional Arabic','Geeza Pro',serif; direction:rtl}
+
+  /* ---------- screens ---------- */
+  .screen{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .screen.active{display:flex}
+
+  /* ---------- start screen ---------- */
+  #startScreen{justify-content:center;align-items:center;text-align:center;padding:32px 24px;
+    background:radial-gradient(ellipse at 50% -10%, #22366E 0%, var(--navy-deep) 60%)}
+  .crescent{width:74px;height:74px;margin-bottom:22px}
+  #startScreen h1{font-size:30px;line-height:1.2;letter-spacing:.5px;margin-bottom:6px}
+  #startScreen .route-label{color:var(--gold);font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-bottom:26px}
+  #startScreen p.intro{color:#B9B2A0;font-size:15px;line-height:1.55;max-width:330px;margin-bottom:34px}
+  .btn{
+    border:none;border-radius:14px;cursor:pointer;font-size:17px;font-weight:600;
+    padding:17px 30px;width:100%;max-width:330px;
+  }
+  .btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#B08C36 100%);color:#1A1405;box-shadow:0 6px 24px rgba(200,162,74,.35)}
+  .btn-ghost{background:transparent;color:var(--sand);border:1px solid var(--line);margin-top:12px;font-weight:500}
+  .hint{margin-top:26px;font-size:12.5px;color:#6E6A5C;line-height:1.5;max-width:320px}
+
+  /* ---------- journey screen ---------- */
+  #journeyScreen{background:var(--navy-deep)}
+  header{
+    padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--line);flex-shrink:0
+  }
+  header .title{font-size:15px;letter-spacing:1px;color:var(--gold)}
+  header .controls{display:flex;gap:10px}
+  .icon-btn{
+    width:40px;height:40px;border-radius:10px;border:1px solid var(--line);
+    background:var(--navy-card);color:var(--cream);font-size:17px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center
+  }
+  .icon-btn.muted{color:#5A5446;border-color:#3a3320}
+
+  /* status strip */
+  .status{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}
+  .stat{flex:1;padding:12px 6px;text-align:center;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:none}
+  .stat .v{font-size:21px;font-weight:700;color:var(--cream)}
+  .stat .v small{font-size:12px;color:var(--sand);font-weight:400}
+  .stat .l{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sand);margin-top:3px}
+
+  /* route spine — the signature element */
+  .spine-wrap{padding:20px 18px 8px;flex-shrink:0}
+  .spine{position:relative;height:46px}
+  .spine .track{position:absolute;top:14px;left:0;right:0;height:3px;background:var(--line);border-radius:2px}
+  .spine .fill{position:absolute;top:14px;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-bright));border-radius:2px;width:0%;transition:width 1s linear;box-shadow:0 0 8px rgba(226,194,119,.5)}
+  .spine .dot{
+    position:absolute;top:9px;width:13px;height:13px;border-radius:50%;
+    background:var(--navy-deep);border:2px solid var(--line);transform:translateX(-50%)
+  }
+  .spine .dot.passed{background:var(--gold);border-color:var(--gold-bright)}
+  .spine .dot.next{border-color:var(--gold-bright);animation:pulse 1.6s infinite}
+  .spine .end-label{position:absolute;top:32px;font-size:10.5px;letter-spacing:1px;color:var(--sand);text-transform:uppercase}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(226,194,119,.5)}50%{box-shadow:0 0 0 7px rgba(226,194,119,0)}}
+
+  /* upcoming card */
+  .upnext{margin:10px 18px 14px;padding:14px 16px;background:var(--navy-card);border:1px solid var(--line);border-radius:14px;flex-shrink:0}
+  .upnext .l{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--sand);margin-bottom:5px}
+  .upnext .n{font-size:17px;font-weight:600}
+  .upnext .d{font-size:13.5px;color:var(--gold);margin-top:3px}
+
+  /* feed of triggered landmark cards */
+  #feed{flex:1;overflow-y:auto;padding:0 18px 30px;-webkit-overflow-scrolling:touch}
+  .card{
+    background:var(--navy-card);border:1px solid var(--line);border-radius:18px;
+    padding:22px 20px;margin-bottom:16px;animation:rise .5s ease
+  }
+  .card.live{border-color:var(--gold);box-shadow:0 8px 32px rgba(200,162,74,.18)}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .card .eyebrow{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .card h2{font-size:24px;line-height:1.15;margin-bottom:2px}
+  .card .ar{font-size:26px;color:var(--gold-bright);margin:6px 0 14px;line-height:1.6}
+  .card .story{font-size:15px;line-height:1.62;color:#D9D2BF;white-space:pre-line}
+  .card .facts{margin-top:14px;border-top:1px dashed var(--line);padding-top:13px}
+  .card .facts div{font-size:13.5px;color:var(--sand);line-height:1.55;padding-left:16px;position:relative;margin-bottom:7px}
+  .card .facts div::before{content:'◆';position:absolute;left:0;top:1px;font-size:8px;color:var(--gold)}
+  .card .replay{
+    margin-top:14px;background:transparent;border:1px solid var(--gold);color:var(--gold);
+    border-radius:10px;padding:9px 18px;font-size:13.5px;cursor:pointer
+  }
+  .speaking-badge{display:inline-flex;align-items:center;gap:7px;margin-top:13px;font-size:12.5px;color:var(--ok)}
+  .speaking-badge .bar{display:inline-block;width:3px;height:12px;background:var(--ok);animation:eq .7s infinite alternate;border-radius:2px}
+  .speaking-badge .bar:nth-child(2){animation-delay:.2s}
+  .speaking-badge .bar:nth-child(3){animation-delay:.4s}
+  @keyframes eq{from{transform:scaleY(.3)}to{transform:scaleY(1)}}
+
+  .empty{padding:36px 24px;text-align:center;color:#6E6A5C;font-size:14px;line-height:1.6}
+  .gps-warn{margin:10px 18px;padding:12px 15px;border-radius:12px;background:#3A2B1A;border:1px solid #6B4F2A;color:#E8C690;font-size:13px;line-height:1.5;display:none}
+</style>
+</head>
+<body>
+
+<!-- ============ START SCREEN ============ -->
+<div class="screen active" id="startScreen">
+  <svg class="crescent" viewBox="0 0 80 80" fill="none">
+    <path d="M52 8a32 32 0 1 0 0 64 26 26 0 1 1 0-64z" fill="#C8A24A"/>
+    <circle cx="58" cy="22" r="4" fill="#E2C277"/>
+  </svg>
+  <div class="route-label">Makkah → Madinah · 450 km</div>
+  <h1 class="serif">The Hijrah Road</h1>
+  <p class="intro">A living tour guide for the road to the City of the Prophet ﷺ. As you pass each landmark, it will speak its story aloud — Sirah, history, and the du'as of the traveller.</p>
+  <button class="btn btn-gold" id="btnStart">Begin the journey</button>
+  <button class="btn btn-ghost" id="btnDemo">Preview in demo mode</button>
+  <p class="hint">Allow location when prompted, keep this tab open, and turn your volume up. Works best in Chrome with the screen kept awake.</p>
+</div>
+
+<!-- ============ JOURNEY SCREEN ============ -->
+<div class="screen" id="journeyScreen">
+  <header>
+    <div class="title serif">THE HIJRAH ROAD</div>
+    <div class="controls">
+      <button class="icon-btn" id="btnMute" title="Mute voice">🔊</button>
+      <button class="icon-btn" id="btnStop" title="End journey">✕</button>
+    </div>
+  </header>
+
+  <div class="status">
+    <div class="stat"><div class="v" id="stSpeed">–<small> km/h</small></div><div class="l">Speed</div></div>
+    <div class="stat"><div class="v" id="stDist">–<small> km</small></div><div class="l">To Madinah</div></div>
+    <div class="stat"><div class="v" id="stNext">–<small> km</small></div><div class="l">Next stop</div></div>
+  </div>
+
+  <div class="spine-wrap">
+    <div class="spine" id="spine">
+      <div class="track"></div>
+      <div class="fill" id="spineFill"></div>
+      <span class="end-label" style="left:0">Makkah</span>
+      <span class="end-label" style="right:0">Madinah</span>
+    </div>
+  </div>
+
+  <div class="gps-warn" id="gpsWarn"></div>
+
+  <div class="upnext" id="upnext">
+    <div class="l">Approaching next</div>
+    <div class="n" id="unName">Locating you…</div>
+    <div class="d" id="unDist"></div>
+  </div>
+
+  <div id="feed">
+    <div class="empty" id="feedEmpty">Landmark stories will appear here automatically as you travel north. Safe journey — Bismillah.</div>
+  </div>
+</div>
+
+<script>
+/* =================================================================
+   LANDMARK DATABASE — Makkah → Madinah, Highway 15
+   narration = spoken aloud (TTS). facts = shown on card.
+================================================================= */
+const LANDMARKS = [
+{
+  id:'taneem', lat:21.4669, lon:39.8125, radius:4,
+  name:"Masjid Aisha · At-Tan'eem", ar:"مسجد عائشة · التنعيم",
+  eyebrow:"Leaving the Haram of Makkah",
+  narration:"As we leave Makkah, on our right is Tan'eem, home of Masjid Aisha. This is the nearest boundary of the Haram, about seven and a half kilometres from the Kaaba. After the Farewell Hajj, the Prophet, peace be upon him, instructed Aisha's brother Abdur-Rahman to bring her here so she could enter ihram for Umrah. To this day, pilgrims in Makkah who wish to perform an additional Umrah come to Tan'eem to enter ihram, following her example. Take a last look back toward the Holy City, and ask Allah to invite you again.",
+  facts:[
+    "Closest Hill (boundary) point of the Haram — ~7.5 km from the Kaaba",
+    "Named after Aisha (RA), who entered ihram here in 10 AH",
+    "The standard miqat for Makkah residents performing extra Umrah"
+  ]
+},
+{
+  id:'wadifatimah', lat:21.6169, lon:39.6989, radius:7,
+  name:"Wadi Fatimah · Al-Jumum", ar:"وادي فاطمة",
+  eyebrow:"Valley of the Conquest camp",
+  narration:"We are now crossing Wadi Fatimah, known in the Prophet's time as Marr az-Zahran. This green, well-watered valley has fed Makkah with dates and vegetables for centuries. It was here, in Ramadan of the eighth year of Hijrah, that the Prophet, peace be upon him, camped with ten thousand companions on the eve of the Conquest of Makkah. He ordered each man to light his own fire, and when Abu Sufyan looked out at ten thousand flames covering the valley, he understood that the age of resistance was over. Makkah fell the next day almost without bloodshed — and the Prophet entered it with his head lowered in humility.",
+  facts:[
+    "Classical name: Marr az-Zahran",
+    "Camp of the 10,000 — eve of the Conquest of Makkah, 8 AH",
+    "Still one of the most fertile valleys of the Hijaz"
+  ]
+},
+{
+  id:'usfan', lat:21.9208, lon:39.3617, radius:7,
+  name:"Usfan", ar:"عُسفان",
+  eyebrow:"Crossroads of the ancients",
+  narration:"The town ahead is Usfan, about eighty kilometres from Makkah, an ancient halt on the caravan road between Makkah, Madinah and Syria. The Prophet, peace be upon him, passed through Usfan many times. Near here, during the campaign against Banu Lihyan, the fear prayer, Salat al-Khawf, was performed — the shortened congregational prayer revealed for times of danger, where the army prays in shifts so no moment of worship and no moment of vigilance is lost. Usfan also has wells dating back thousands of years. Travellers have been refilling their water here since before Islam.",
+  facts:[
+    "~80 km from Makkah on the ancient caravan road",
+    "Associated with Salat al-Khawf (the fear prayer) during the Banu Lihyan campaign",
+    "Ancient wells still mark the old halt"
+  ]
+},
+{
+  id:'khulays', lat:22.1539, lon:39.3183, radius:7,
+  name:"Khulays", ar:"خُليص",
+  eyebrow:"Garden of the highway",
+  narration:"We are passing Khulays, a farming town set in a broad wadi. For centuries this was a favourite resting place for Hajj caravans coming down from Syria and Egypt — the Egyptian mahmal route passed right through here. The valley's groundwater supports date palms, mangoes and vegetables, and you may notice the landscape soften around you. Old Ottoman-era forts once guarded the caravan watering points in this district.",
+  facts:[
+    "Historic halt on the Egyptian Hajj caravan route",
+    "Known for date, mango and vegetable farms",
+    "Ottoman caravan forts once guarded its wells"
+  ]
+},
+{
+  id:'juhfah', lat:22.7500, lon:39.0900, radius:14,
+  name:"Rabigh & Miqat al-Juhfah", ar:"رابغ · ميقات الجحفة",
+  eyebrow:"Miqat of the north-west",
+  narration:"To our west lies Rabigh, and near it the ancient site of Al-Juhfah — the miqat appointed by the Prophet, peace be upon him, for the pilgrims of Syria, Egypt and the Maghreb. Juhfah was once a flourishing town until floods destroyed it; today pilgrims assume ihram at the nearby mosque. Close to this area is Ghadir Khumm, a watering pool where the Prophet stopped on his way back from the Farewell Hajj and addressed the companions, reminding them to hold fast to the Book of Allah and to honour his family. We are now roughly at the halfway point of the journey. A good moment for dhikr — the traveller's du'a is answered.",
+  facts:[
+    "Al-Juhfah: miqat for pilgrims arriving from Sham, Egypt and the Maghreb",
+    "Ghadir Khumm — sermon site on the return from the Farewell Hajj, 10 AH",
+    "Rabigh today: Red Sea port and home of KAUST's industrial neighbour, Petro Rabigh"
+  ]
+},
+{
+  id:'mastoorah', lat:23.1119, lon:38.8312, radius:9,
+  name:"Mastoorah", ar:"مستورة",
+  eyebrow:"The midway rest",
+  narration:"This is Mastoorah, the traditional halfway rest stop between the two Holy Cities — most coaches and buses break the journey here. If you stop, you'll find mosques, food and coffee. From here, the road begins to bend inland and north-east, climbing gently from the coastal plain of Tihamah toward the volcanic highlands that surround Madinah. The black basalt fields you will start to see are called harrat — ancient lava flows that shaped where Madinah's farms and settlements could grow.",
+  facts:[
+    "Customary halfway stop for Makkah–Madinah coaches",
+    "Road transitions from coastal Tihamah plain to volcanic uplands",
+    "The black rock ahead is harrat — prehistoric lava fields"
+  ]
+},
+{
+  id:'hijrahreflect', lat:23.4500, lon:38.8700, radius:12,
+  name:"The Hijrah Route", ar:"طريق الهجرة",
+  eyebrow:"In the footsteps of the migration",
+  narration:"Somewhere west of this highway runs the path of the greatest journey in Islamic history — the Hijrah. In 622, the Prophet, peace be upon him, and Abu Bakr left Makkah in secret, hid three nights in the cave of Thawr south of the city, then travelled this same general corridor north with the guide Abdullah ibn Urayqit, keeping to the coast to avoid the Quraysh search parties. The bounty on their heads was one hundred camels. The journey you are making in under five hours took them around eight days. Every metre of this road, remember: the calendar of one point eight billion Muslims begins with this journey.",
+  facts:[
+    "Hijrah year 622 CE = year 1 of the Islamic calendar",
+    "~8 days by camel along the coastal corridor; bounty: 100 camels",
+    "Suraqah ibn Malik pursued them — and was promised the bracelets of Chosroes"
+  ]
+},
+{
+  id:'badr', lat:23.7800, lon:38.7906, radius:28,
+  name:"Badr", ar:"بدر",
+  eyebrow:"The Day of the Criterion",
+  narration:"To our west lies Badr, scene of the first great battle of Islam, fought on the seventeenth of Ramadan in the second year of Hijrah. Three hundred and thirteen poorly equipped Muslims faced about a thousand Quraysh, and by the help of Allah and the angels, prevailed. The Quran calls it Yawm al-Furqan — the Day of the Criterion. Fourteen Muslim martyrs are buried at Badr, and the Prophet, peace be upon him, said of the men who stood there that Allah had looked upon the people of Badr and said: do as you wish, for I have forgiven you. If your coach routes through Badr town itself, you may see the martyrs' cemetery and the hill where the Prophet's command post stood.",
+  facts:[
+    "17 Ramadan, 2 AH — 313 Muslims vs ~1,000 Quraysh",
+    "Named Yawm al-Furqan (Day of the Criterion) in Surah al-Anfal",
+    "14 martyrs of Badr are buried at the site"
+  ]
+},
+{
+  id:'safra', lat:24.0900, lon:39.0800, radius:9,
+  name:"Wadi as-Safra · Al-Musayjid", ar:"وادي الصفراء",
+  eyebrow:"Valley of the Badr campaign",
+  narration:"We are entering Wadi as-Safra, the Yellow Valley — a long corridor of date palms threading between dark volcanic hills. This was the main artery between Madinah and Badr. The Prophet's army marched down this valley to Badr, and returned through it victorious. The villages here supplied dates to Madinah for over a thousand years, and the old pilgrim road, the Tariq al-Anbiya, follows the same line we are driving now. Watch the palm groves against the black basalt — this is the classic landscape of the Madinah region.",
+  facts:[
+    "Main marching route of the Badr campaign, 2 AH",
+    "Ancient palm-growing valley on the old pilgrim road",
+    "Black basalt + green palms = signature Madinah-region landscape"
+  ]
+},
+{
+  id:'dhulhulayfah', lat:24.4136, lon:39.5434, radius:6,
+  name:"Dhul Hulayfah · Abyar Ali", ar:"ذو الحليفة · أبيار علي",
+  eyebrow:"Miqat of Madinah · the Blessed Valley",
+  narration:"On our left is Masjid Dhul Hulayfah, also called Abyar Ali or Masjid ash-Shajarah, the Mosque of the Tree. This is the miqat of the people of Madinah — every time the Prophet, peace be upon him, travelled from Madinah for Hajj or Umrah, he entered ihram exactly here. It sits in Wadi al-Aqiq, about which the Prophet said a visitor came to him from his Lord saying: pray in this blessed valley. We are now minutes from the Haram of Madinah. Begin sending salawat upon the Prophet — Allahumma salli ala Muhammad wa ala aali Muhammad.",
+  facts:[
+    "Miqat of Madinah — where the Prophet ﷺ himself always entered ihram",
+    "Located in Wadi al-Aqiq, 'the blessed valley' of the hadith",
+    "Largest miqat mosque — room for thousands of pilgrims"
+  ]
+},
+{
+  id:'madinah', lat:24.4672, lon:39.6111, radius:6,
+  name:"Madinah al-Munawwarah", ar:"المدينة المنورة",
+  eyebrow:"Arrival · the Radiant City",
+  narration:"Welcome to Madinah al-Munawwarah, the Radiant City — sanctuary of the Prophet, peace and blessings be upon him. He said: For the believer, Madinah is best for them, if they only knew. To your east stands Mount Uhud, of which he said: Uhud is a mountain that loves us, and we love it. Ahead lies Masjid an-Nabawi and the green dome over his resting place. Enter the city with calm and salawat on your lips. Visit with the manners of a guest: pray in the Rawdah if you are able, give salam at the blessed grave, and do not forget Masjid Quba — the first mosque of Islam, where one prayer carries the reward of an Umrah. May Allah accept your journey.",
+  facts:[
+    "Second-holiest city in Islam; sanctuary (haram) declared by the Prophet ﷺ",
+    "Mount Uhud — 'a mountain that loves us and we love it'",
+    "Prayer in Masjid Quba = reward of an Umrah (Sunan Ibn Majah)"
+  ]
+}
+];
+
+/* Travel du'a — spoken at journey start */
+const START_NARRATION = "Bismillah. We begin the journey from Makkah to Madinah — about four hundred and fifty kilometres, the road of pilgrims and prophets. The Prophet, peace be upon him, would say when setting out: Allahu Akbar, Allahu Akbar, Allahu Akbar. Subhanal-ladhi sakh-khara lana hadha wa ma kunna lahu muqrineen, wa inna ila Rabbina la-munqaliboon. Glory to the One who subjected this vehicle to us, for we could never have done it ourselves — and surely, to our Lord we are returning. Sit back. I will speak whenever we pass somewhere worth knowing.";
+
+/* ============ state ============ */
+let watching=null, demoTimer=null, muted=false, wakeLock=null;
+const triggered=new Set();
+const DEST=LANDMARKS[LANDMARKS.length-1];
+const ROUTE_TOTAL=haversine(21.4225,39.8262,DEST.lat,DEST.lon); // straight-line baseline
+
+/* ============ helpers ============ */
+function haversine(a,b,c,d){
+  const R=6371,t=Math.PI/180,
+  dLat=(c-a)*t,dLon=(d-b)*t,
+  h=Math.sin(dLat/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+const $=id=>document.getElementById(id);
+
+/* ============ speech ============ */
+function speak(text,onend){
+  if(muted||!('speechSynthesis' in window)){onend&&onend();return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.95;u.pitch=1;
+  const vs=speechSynthesis.getVoices();
+  u.voice=vs.find(v=>/en[-_]GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;
+  u.onend=()=>onend&&onend();
+  speechSynthesis.speak(u);
+}
+
+/* ============ spine ============ */
+function buildSpine(){
+  const spine=$('spine');
+  LANDMARKS.forEach(lm=>{
+    const fromStart=haversine(21.4225,39.8262,lm.lat,lm.lon);
+    const pct=Math.min(99,fromStart/ROUTE_TOTAL*100);
+    const d=document.createElement('div');
+    d.className='dot';d.id='dot-'+lm.id;d.style.left=pct+'%';
+    spine.appendChild(d);
+  });
+}
+
+/* ============ landmark card ============ */
+function showLandmark(lm){
+  triggered.add(lm.id);
+  $('feedEmpty').style.display='none';
+  $('dot-'+lm.id)?.classList.add('passed');
+  document.querySelectorAll('.card.live').forEach(c=>c.classList.remove('live'));
+
+  const card=document.createElement('div');
+  card.className='card live';
+  card.innerHTML=`
+    <div class="eyebrow">${lm.eyebrow}</div>
+    <h2 class="serif">${lm.name}</h2>
+    <div class="ar arabic">${lm.ar}</div>
+    <div class="story">${lm.narration}</div>
+    <div class="facts">${lm.facts.map(f=>`<div>${f}</div>`).join('')}</div>
+    <div class="speaking-badge" id="badge-${lm.id}"><span class="bar"></span><span class="bar"></span><span class="bar"></span> Narrating…</div>
+    <button class="replay" onclick="replay('${lm.id}')">↻ Replay narration</button>`;
+  $('feed').prepend(card);
+  $('feed').scrollTop=0;
+  if(navigator.vibrate)navigator.vibrate([120,60,120]);
+  speak(lm.narration,()=>{const b=$('badge-'+lm.id);if(b)b.style.display='none'});
+}
+window.replay=id=>{
+  const lm=LANDMARKS.find(l=>l.id===id);
+  const b=$('badge-'+id);if(b)b.style.display='inline-flex';
+  speak(lm.narration,()=>{if(b)b.style.display='none'});
+};
+
+/* ============ position update ============ */
+function onPosition(lat,lon,speedMs){
+  // status
+  $('stSpeed').innerHTML=(speedMs!=null&&!isNaN(speedMs)?Math.round(speedMs*3.6):'–')+'<small> km/h</small>';
+  const toDest=haversine(lat,lon,DEST.lat,DEST.lon);
+  $('stDist').innerHTML=Math.round(toDest)+'<small> km</small>';
+
+  // progress
+  const done=Math.max(0,Math.min(100,(1-toDest/ROUTE_TOTAL)*100));
+  $('spineFill').style.width=done+'%';
+
+  // next upcoming (untriggered, ahead = closer to dest than us by ordering)
+  let next=null,nextD=1e9;
+  for(const lm of LANDMARKS){
+    if(triggered.has(lm.id))continue;
+    const d=haversine(lat,lon,lm.lat,lm.lon);
+    if(d<=lm.radius){showLandmark(lm);continue}
+    if(d<nextD){nextD=d;next=lm}
+  }
+  document.querySelectorAll('.dot.next').forEach(d=>d.classList.remove('next'));
+  if(next){
+    $('unName').textContent=next.name;
+    $('unDist').textContent=Math.round(nextD)+' km away';
+    $('stNext').innerHTML=Math.round(nextD)+'<small> km</small>';
+    $('dot-'+next.id)?.classList.add('next');
+  }else{
+    $('unName').textContent='Journey complete — welcome to Madinah';
+    $('unDist').textContent='';
+    $('stNext').innerHTML='–<small> km</small>';
+  }
+}
+
+/* ============ GPS ============ */
+function startGPS(){
+  if(!navigator.geolocation){gpsWarn('This browser has no geolocation support. Use Chrome, or run Demo mode.');return}
+  watching=navigator.geolocation.watchPosition(
+    p=>{$('gpsWarn').style.display='none';onPosition(p.coords.latitude,p.coords.longitude,p.coords.speed)},
+    e=>{gpsWarn('GPS unavailable ('+e.message+'). If you opened this as a local file, location may be blocked — host it over HTTPS (e.g. GitHub Pages) or use Demo mode.')},
+    {enableHighAccuracy:true,maximumAge:5000,timeout:20000}
+  );
+}
+function gpsWarn(msg){const w=$('gpsWarn');w.textContent=msg;w.style.display='block'}
+
+/* ============ wake lock ============ */
+async function keepAwake(){
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');
+    document.addEventListener('visibilitychange',async()=>{
+      if(document.visibilityState==='visible'&&wakeLock!==null)
+        wakeLock=await navigator.wakeLock.request('screen').catch(()=>null);
+    });}}catch(e){}
+}
+
+/* ============ demo mode ============ */
+function startDemo(){
+  // straight-line interpolation through landmark waypoints
+  const pts=[[21.4225,39.8262],...LANDMARKS.map(l=>[l.lat,l.lon])];
+  let seg=0,t=0;
+  demoTimer=setInterval(()=>{
+    if(seg>=pts.length-1){clearInterval(demoTimer);return}
+    const [a1,b1]=pts[seg],[a2,b2]=pts[seg+1];
+    t+=0.05;
+    if(t>=1){t=0;seg++}
+    const lat=a1+(a2-a1)*t, lon=b1+(b2-b1)*t;
+    onPosition(lat,lon,33); // ~120 km/h
+  },700);
+}
+
+/* ============ wiring ============ */
+function begin(demo){
+  $('startScreen').classList.remove('active');
+  $('journeyScreen').classList.add('active');
+  buildSpine();
+  keepAwake();
+  // user-gesture unlock for TTS, then intro narration
+  speak(START_NARRATION);
+  if(demo)startDemo();else startGPS();
+}
+$('btnStart').onclick=()=>begin(false);
+$('btnDemo').onclick=()=>begin(true);
+$('btnMute').onclick=()=>{
+  muted=!muted;
+  $('btnMute').textContent=muted?'🔇':'🔊';
+  $('btnMute').classList.toggle('muted',muted);
+  if(muted)speechSynthesis.cancel();
+};
+$('btnStop').onclick=()=>{
+  speechSynthesis.cancel();
+  if(watching!=null)navigator.geolocation.clearWatch(watching);
+  if(demoTimer)clearInterval(demoTimer);
+  location.reload();
+};
+// preload voices (Chrome quirk)
+if('speechSynthesis' in window)speechSynthesis.getVoices();
+</script>
+</body>
+</html>
